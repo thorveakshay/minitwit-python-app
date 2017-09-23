@@ -17,6 +17,9 @@ from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
 
+# importing lib to support JSON
+from flask import jsonify
+
 
 # configuration
 DATABASE = '/tmp/minitwit.db'
@@ -123,7 +126,7 @@ def timeline():
     messages as well as all the messages of followed users.
     """
     if not g.user:
-        return redirect(url_for('public_timeline'))
+        return redirect(url_for('public_timeline_api'))
     return render_template('timeline.html', messages=query_db('''
         select message.*, user.* from message, user
         where message.author_id = user.user_id and (
@@ -142,6 +145,30 @@ def public_timeline():
         where message.author_id = user.user_id
         order by message.pub_date desc limit ?''', [PER_PAGE]))
 
+# Public timeline api changes start
+
+@app.route('/api/statuses/public_timeline', methods=['GET'])
+def public_timeline_api():
+    """Displays the latest messages of all users."""
+    data= query_db('''
+        select message.*, user.* from message, user
+        where message.author_id = user.user_id
+        order by message.pub_date desc limit ?''', [PER_PAGE])
+
+    pub_timeline=[]
+    for i in data:
+        print(i)
+        row={'messages': i[2],
+            'users':i[5],
+            'email':i[6]}
+        pub_timeline.append(row.copy())
+        print(row)
+
+    #result = jsonify(pub_timeline)
+    #result.status_code = 200
+    return jsonify(messages=pub_timeline)
+
+# Public timeline api changes End
 
 @app.route('/<username>')
 def user_timeline(username):
