@@ -689,6 +689,7 @@ def user_timeline(username):
     """Display's a users tweets."""
     # profile_user = query_db('select * from user where username = ?',
     # [username], one=True)
+    user_ID = before_request()
     user_ID = None
     if user_ID != None:
         user_ID = str(g.user['_id'])
@@ -720,6 +721,7 @@ def user_timeline(username):
 @app.route('/<username>/follow')
 def follow_user(username):
     """Adds the current user as follower of the given user."""
+    user_ID = before_request()
     user_ID = None
     if user_ID != None:
         user_ID = str(g.user['_id'])
@@ -742,6 +744,7 @@ def follow_user(username):
 @app.route('/<username>/unfollow')
 def unfollow_user(username):
     """Removes the current user as follower of the given user."""
+    user_ID = before_request()
     user_ID = None
     if user_ID != None:
         user_ID = str(g.user['_id'])
@@ -760,6 +763,15 @@ def unfollow_user(username):
         print "Invalidating cache after Unfollow"
         return redirect(url_for('user_timeline', username=username))
 
+
+"""
+##################################################
+
+ Like unlike logic Start
+
+##################################################
+"""
+
 ############################## LIke Unlike Logic start ##################################
 
 
@@ -767,59 +779,182 @@ def unfollow_user(username):
 def like_comment(username):
     """Adds Likes to messages."""
 
+    user_ID = before_request()
+    user_ID = None
+    if user_ID != None:
+        user_ID = str(g.user['_id'])
+
     message_id = request.args.get('message_id')
     profile_usr = request.args.get('profile_usr')
+    count = float(1)
 
-    print "username who liked message", username
-    print "Id of the message", message_id
+    redis_obj.zincrby('add_like', message_id, count)
 
-    
+    print "message ID", message_id
 
-    redis_obj.sadd(message_id, username)
-    # redis_obj.zadd(key,username)
-
-    print redis_obj.scard(message_id)
-    return redirect(url_for('user_timeline', username=profile_usr))
+    if redis_obj.get(user_ID):
+        return redirect(url_for('timeline', username=profile_usr, userId=pickle.loads(redis_obj.get(user_ID))))
+    else:
+        """ Invalidating cache """
+        redis_obj.delete('leaderboard-key')
+        redis_obj.delete(session['user_id'])
+        print "Invalidating cache after Like"
+        return redirect(url_for('timeline', username=profile_usr))
 
 
 @app.route('/<username>/unlike')
 def unlike_comment(username):
     """Removes likes from messages."""
+    user_ID = before_request()
+    user_ID = None
+    if user_ID != None:
+        user_ID = str(g.user['_id'])
 
     message_id = request.args.get('message_id')
-    print "username who unlike message", username
+    profile_usr = request.args.get('profile_usr')
+    count=float(-1)
+
+    print "username who liked message", username
     print "Id of the message", message_id
 
-    redis_obj.srem(message_id, username)
-    # redis_obj.zrem(key,username)
+    redis_obj.zincrby('add_like', message_id, count)
+
     print redis_obj.scard(message_id)
 
-    return redirect(url_for('user_timeline', username=profile_usr))
+    if redis_obj.get(user_ID):
+        return redirect(url_for('timeline', username=profile_usr, userId=pickle.loads(redis_obj.get(user_ID))))
+    else:
+        """ Invalidating cache """
+        redis_obj.delete('leaderboard-key')
+        redis_obj.delete(session['user_id'])
+        print "Invalidating cache after unlike"
+        return redirect(url_for('timeline', username=profile_usr))
+
 
 ############################## Like unlike logic end ####################################
 
 
-############################## leaderboard changes start ################################
+@app.route('/api/favorites/create/<id>')
+@basic_auth.required
+def like_comment_API(id):
+    """Adds like to given message_id."""
+
+    count = float(1)
+    redis_obj.zincrby('add_like', id, count)
+
+    """ Invalidating cache """
+    redis_obj.delete('leaderboard-key')
+
+    return jsonify(username=g.user[1], Message="Success! Message liked successfully. ", Status_code=status.HTTP_200_OK)
+
+
+### Unlike message ###
+
+
+@app.route('/api/favorites/destroy/<id>')
+@basic_auth.required
+def unlike_comment_API(id):
+    """Adds like to given message_id."""
+
+    count = float(-1)
+    redis_obj.zincrby('add_like', id, count)
+
+    """ Invalidating cache """
+    redis_obj.delete('leaderboard-key')
+    return jsonify(username=g.user[1], Message="Success! Message unliked successfully. ", Status_code=status.HTTP_200_OK)
+
+
+"""
+##################################################
+
+ Like unlike logic End
+
+##################################################
+"""
+
+
+"""
+##################################################
+
+leaderboard logic start
+
+##################################################
+"""
+
+# routes
+
+
 @app.route('/leaderboard')
-def leaderboard_timeline():
+def leaderboard_timeline(TTL=60):
 
-    old_messages = mongo.db.message.find()
+    keyName = "leaderboard-key"
 
-    # print "all leadership messages", messages
-    # data=[]
-    #
-    for row in old_messages:
-        score = redis_obj.scard(row['_id'])
-        mongo.db.message.update({"_id": row['_id']}, {"$set": {"score": score}})
+    leadership_data= redis_obj.zrevrange('add_like',0,-1,withscores=True)
 
-    messages = mongo.db.message.find().sort('score', -1)
-    print "messages", messages
-    followed = {'follows': []}
-
-    return render_template('timeline.html', messages=messages)
+    list_of_users=[]
 
 
-############################## leaderboard changes start ##############################
+    if redis_obj.get(keyName):
+        print("** Messages from leaderboard Redis Cache **")
+        key = pickle.loads(redis_obj.get(keyName))
+        return render_template('timeline.html', messages=key)
+    else:
+        for like in leadership_data:
+            message_id=like[0]
+            user_record=mongo.db.message.find_one({"_id":ObjectId(message_id)})
+
+            list_of_users.append({'username':user_record['username'],'email':user_record['email'],'pub_date':user_record['pub_date'],'text':user_record['text'],'score':int(like[1])})
+
+
+        print("** Messages from  leaderboard DB hit **")
+        redis_obj.set(keyName, cPickle.dumps(list_of_users))
+        redis_obj.expire(keyName, TTL)
+        return render_template('timeline.html', messages=list_of_users)
+
+
+##API changes
+
+### Unlike message ###
+@app.route('/api/favorites/list')
+@basic_auth.required
+def leaderboard_timeline_API():
+    """Adds like to given message_id."""
+    keyName = "leaderboard-key"
+
+    leadership_data= redis_obj.zrevrange('add_like',0,-1,withscores=True)
+
+    if redis_obj.get(keyName):
+        print("** Messages from leaderboard Redis Cache **")
+        key = pickle.loads(redis_obj.get(keyName))
+        user_profile = jsonify(Message="Success! leaderboard details.",
+                               leaderboard=key, Status_code=status.HTTP_200_OK)
+        return user_profile
+    else:
+        for like in leadership_data:
+            message_id=like[0]
+            user_record=mongo.db.message.find_one({"_id":ObjectId(message_id)})
+            tmp =user_record['email']
+            list_of_users.append({'username':user_record['username'],'email':user_record['email'],'pub_date':user_record['pub_date'],'text':user_record['text'],'score':int(like[1])})
+
+
+        print("** Messages from  leaderboard DB hit **")
+        redis_obj.set(keyName, cPickle.dumps(list_of_users))
+        redis_obj.expire(keyName, TTL)
+
+
+    user_profile = jsonify(Message="Success! leaderboard details.",
+                           leaderboard=list_of_users, Status_code=status.HTTP_200_OK)
+
+    return user_profile
+
+
+"""
+##################################################
+
+leaderboard logic end
+
+##################################################
+"""
 
 
 @app.route('/add_message', methods=['POST'])
@@ -873,7 +1008,7 @@ def login():
             flash('You were logged in')
             session['user_id'] = user['_id']
             logUser = pickle.dumps(list(user))
-            print "logUser", logUser
+            # print "logUser", logUser
             redis_obj.setex("Logged " + str(session['user_id']), logUser, 60)
             return redirect(url_for('timeline'))
     return render_template('login.html', error=error)
@@ -916,7 +1051,6 @@ def logout():
     """Logs the user out."""
     flash('You were logged out')
     session.pop('user_id', None)
-    redis_obj.flushall()
     return redirect(url_for('public_timeline'))
 
 

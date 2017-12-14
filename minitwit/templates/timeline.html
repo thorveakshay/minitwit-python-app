@@ -1,5 +1,5 @@
-{% extends "layout.html" %} {% block title %} {% if request.endpoint == 'public_timeline' %} Public Timeline {% elif request.endpoint == 'leaderboard_timeline' %} Leaderboard {% elif request.endpoint == 'user_timeline' %} {{ profile_user.username }}'s
-Timeline {% else %} My Timeline {% endif %} {% endblock %} {% block body %}
+{% extends "layout.html" %} {% block title %} {% if request.endpoint == 'public_timeline' %} Public Timeline {% elif request.endpoint == 'leaderboard_timeline' %} Leaderboard &#127942; {% elif request.endpoint == 'user_timeline' %} {{ profile_user.username
+}}'s Timeline {% else %} My Timeline {% endif %} {% endblock %} {% block body %}
 <h2>{{ self.title() }}</h2> {% if g.user %} {% if request.endpoint == 'user_timeline' %}
 <div class="followstatus">
   {% if g.user._id == profile_user._id %} This is you! {% elif followed %} You are currently following this user.
@@ -30,18 +30,16 @@ Timeline {% else %} My Timeline {% endif %} {% endblock %} {% block body %}
       <!-- Leaderboard changes start -->
 
       {% if g.user %} {% if request.endpoint == 'leaderboard_timeline' %}
-      <strong> Score: {{ message.score }} </strong>&#127942;
-      {% endif %}
-      {% endif %}
+      <strong> Score: {{ message.score }} </strong>&#127942; {% endif %} {% endif %}
       <!-- Leaderboard changes start -->
 
       <!-- Like chaanges start-->
-      {% if g.user %} {% if request.endpoint == 'user_timeline' %}
+      {% if g.user %} {% if request.endpoint == 'timeline' %}
       <br>
       <hr>
       <a class="Like" href="{{ url_for('like_comment', username=g.user.username, message_id=message._id, profile_usr=message.username)
 
-      }}"> Like Comment</a>.
+    }}"> Like Comment</a> |
 
       <a class="Unlike" href="{{ url_for('unlike_comment', username=g.user.username,message_id=message._id, profile_usr=message.username)
           }}">Unlike Comment</a>. {% endif %} {% endif %}

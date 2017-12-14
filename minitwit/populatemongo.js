@@ -39,12 +39,12 @@ db.users.insert({_id: getNextSequence("userid"),username:'mini',email:'mini@gmai
 db.users.find()
 show collections
 
-db.message.insert({author_id:1,email:'abc@gmail.com',username:'abc',text:'Wow!! I just exported the data from all tables to MongoDB file! Awesome!',pub_date:1505764842, likes : [2,3]})
-db.message.insert({author_id:1,email:'abc@gmail.com',username:'abc',text:'I saw GOT today! It was awesome #Season7',pub_date:1505764842, likes : [2,3]})
-db.message.insert({author_id:2,email:'qwe@gmail.com',username:'qwe',text:'Awesome weather!! Going for long drive any one interested ?',pub_date:1505764872, likes : [2,3]})
-db.message.insert({author_id:3,email:'sara@gmail.com',username:'sara',text:'Redis is fun!',pub_date:1505764894, likes : [2,3]})
-db.message.insert({author_id:4,email:'max@gmail.com',username:'max',text:'#476! I finished project 4 and Grad assignments. Party time :-)',pub_date:1505764922, likes : [2,3]})
-db.message.insert({author_id:5,email:'mini@gmail.com',username:'mini',text:'Library Second floor! Yay',pub_date:1505764973, likes : [2,3]})
+db.message.insert({author_id:1,email:'abc@gmail.com',username:'abc',text:'Wow!! I just exported the data from all tables to MongoDB file! Awesome!',pub_date:1505764842})
+db.message.insert({author_id:1,email:'abc@gmail.com',username:'abc',text:'I saw GOT today! It was awesome #Season7',pub_date:1505764842})
+db.message.insert({author_id:2,email:'qwe@gmail.com',username:'qwe',text:'Awesome weather!! Going for long drive any one interested ?',pub_date:1505764872})
+db.message.insert({author_id:3,email:'sara@gmail.com',username:'sara',text:'Redis is fun!',pub_date:1505764894})
+db.message.insert({author_id:4,email:'max@gmail.com',username:'max',text:'#476! I finished project 4 and Grad assignments. Party time :-)',pub_date:1505764922]})
+db.message.insert({author_id:5,email:'mini@gmail.com',username:'mini',text:'Library Second floor! Yay',pub_date:1505764973})
 
 db.message.find()
 
