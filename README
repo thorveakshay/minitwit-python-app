@@ -5,18 +5,19 @@ Minitwit application is example application that ships with the Flask microframe
 ## New features added to MiniTwit
   * RESTful API routes
   * Nginx as reverse proxy and load balancer (Deployed on 3 servers)
-  * SQLAlchemy - 
-  *
-  *
-  *
-  *
-  *
+  * SQLAlchemy - The Python SQL Toolkit and Object Relational Mapper.
+  * Flask-BasicAuth - Authentication
+  * MongoDB - NoSQL document-oriented database
+  * Redis -  Used for storing and retriving objects from cache
+  * Twit “Like” and “Unlike” functionality
+  * Leaderboard functionality - most liked Twits will be on top.
+ 
+
+## Note
+
+I tried same application in SQLite3 as well as MongoDB. All SQL queries are commented in code and latest version of code is running on MongoDB and Redis.
 
 
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -90,10 +91,10 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License.
 
 ## Acknowledgments
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* Boilerplate - [Flask](https://github.com/pallets/flask)
+* Thanks for guide - Prof. Kenytt Avery
+
