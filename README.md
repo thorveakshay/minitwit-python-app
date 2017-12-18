@@ -14,9 +14,10 @@ Minitwit application is example application that ships with the Flask microframe
  
 
 ## Note
-
-I tried same application in SQLite3 as well as MongoDB. All SQL queries are commented in code and latest version of code is running on MongoDB and Redis.
-
+```
+I tried same application in SQLite3 as well as MongoDB. 
+All SQL queries are commented in code and latest version of code is running on MongoDB and Redis.
+```
 
 ### Prerequisites
 
@@ -35,6 +36,13 @@ https://github.com/thorveakshay/minitwit-python-app/blob/master/minitwit/minitwi
 ## Deployment
 
 Simplified deployment using single script. Which will load few users and comments and run tests and deploy application on Nginx cluster of 3 servers.
+
+Go to minitwit-python-app/minitwit/
+and run
+```
+./build.sh
+
+```
 
 
 ## Authors
