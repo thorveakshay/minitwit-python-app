@@ -903,6 +903,8 @@ def leaderboard_timeline(TTL=60):
             message_id=like[0]
             user_record=mongo.db.message.find_one({"_id":ObjectId(message_id)})
 
+            print "line 906 ", user_record
+
             list_of_users.append({'username':user_record['username'],'email':user_record['email'],'pub_date':user_record['pub_date'],'text':user_record['text'],'score':int(like[1])})
 
 
@@ -922,7 +924,7 @@ def leaderboard_timeline_API():
     keyName = "leaderboard-key"
 
     leadership_data= redis_obj.zrevrange('add_like',0,-1,withscores=True)
-
+    list_of_users=[]
     if redis_obj.get(keyName):
         print("** Messages from leaderboard Redis Cache **")
         key = pickle.loads(redis_obj.get(keyName))
@@ -939,7 +941,7 @@ def leaderboard_timeline_API():
 
         print("** Messages from  leaderboard DB hit **")
         redis_obj.set(keyName, cPickle.dumps(list_of_users))
-        redis_obj.expire(keyName, TTL)
+        redis_obj.expire(keyName, 60)
 
 
     user_profile = jsonify(Message="Success! leaderboard details.",

@@ -1,5 +1,8 @@
 ### Grad Assignment ###
 
+GitHub URL: https://github.com/thorveakshay/minitwit-python-app
+
+
 Prepared by : Akshay Thorve
 
 ### Code Execution
@@ -13,7 +16,7 @@ Inside minitwit/minitwit run ./build.sh command to start the project
 2) Added Leaderboard with recent score displayed
 3) Added API for above functionality
 4) Added Redis cache for API endpoints as well as old UI routes
-5) Invalidated cache on like, unlike 
+5) Invalidated cache on like, unlike
 
 used zincrby and zrevrange for calculating leadership board
 
